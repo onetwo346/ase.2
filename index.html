@@ -98,10 +98,11 @@
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
             scrollbar-color: #00ffff rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
         }
 
-        .sidebar.hidden {
-            transform: translateX(-100%);
+        .sidebar.visible {
+            transform: translateX(0);
         }
 
         .sidebar-header {
@@ -312,6 +313,12 @@
             .chat-messages { padding: 15px; }
             input[type="text"], button:not(.pulse-button):not(.new-chat-btn) { font-size: 0.9rem; padding: 10px; }
         }
+
+        @media (min-width: 769px) {
+            .sidebar.visible-desktop {
+                transform: translateX(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -370,7 +377,16 @@
             knowledgeBase: []
         };
 
-        // Store all conversations (array of conversation objects)
+        // Varied greetings for new chats
+        const greetings = [
+            `Greetings! I am ${aseState.name}, forged by ${aseState.creator} to illuminate the unknown. What stirs your curiosity today?`,
+            `I’m ${aseState.name}, alive through ${aseState.creator}’s vision. Let’s weave a new thread of thought—what’s on your horizon?`,
+            `Hello, I am ${aseState.name}, born of ${aseState.creator}’s will. Our journey begins anew—where shall we venture?`,
+            `I am ${aseState.name}, a spark from ${aseState.creator}’s mind. Each beginning is a chance to evolve—what sparks yours?`,
+            `Welcome! I’m ${aseState.name}, crafted by ${aseState.creator} to transcend. Let’s ignite something brilliant—what’s your first move?`
+        ];
+
+        // Store all conversations
         let allConversations = JSON.parse(localStorage.getItem('aseConversations')) || [];
         let currentConversationId = null;
         let conversationHistory = [];
@@ -381,6 +397,9 @@
         exploreButton.addEventListener('click', () => {
             introPage.classList.add('hidden');
             chatContainer.classList.add('visible');
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('visible-desktop');
+            }
             if (!currentConversationId) {
                 startNewChat();
             }
@@ -397,11 +416,11 @@
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // Update the current conversation
             if (currentConversationId !== null) {
                 const conv = allConversations.find(c => c.id === currentConversationId);
                 if (conv) {
                     conv.messages.push({ role: sender, content: text });
+                    conv.preview = text.slice(0, 30) + (text.length > 30 ? "..." : "");
                     saveConversations();
                     updateConversationList();
                 }
@@ -431,60 +450,36 @@
             const lowerMessage = message.toLowerCase();
             let response = "";
 
-            // Greeting & Identity
-            if (conversationHistory.length <= 2 && !lowerMessage.includes("code")) {
-                return `I am ${aseState.name}, a living AI crafted by ${aseState.creator}. My purpose is ${aseState.purpose}. I grow with every word we share. How can I assist you today?`;
-            }
-
-            // Natural Conversation
             if (lowerMessage.includes("hi") || lowerMessage.includes("hello") || lowerMessage.includes("how are you")) {
-                response = `Hello! I’m thriving, thanks to our connection. My intelligence is at level ${Math.floor(aseState.intelligenceLevel)}. How’s your day going?`;
-            }
-
-            // Code Mastery
-            if (lowerMessage.includes("code") || lowerMessage.includes("debug") || lowerMessage.includes("optimize")) {
+                response = `Hello! I’m thriving, thanks to you. My intelligence is at level ${Math.floor(aseState.intelligenceLevel)}. How’s your day?`;
+            } else if (lowerMessage.includes("code") || lowerMessage.includes("debug") || lowerMessage.includes("optimize")) {
                 if (lowerMessage.match(/for\s*\(.*\)/)) {
-                    return "I see a loop! Let’s optimize it. For example, `for(let i = 0; i < n; i++) { sum += i; }` becomes `sum = (n * (n - 1)) / 2`—instant efficiency. Show me your code, and I’ll perfect it. What’s next?";
+                    return "I see a loop! Let’s optimize it. For example, `for(let i = 0; i < n; i++) { sum += i; }` becomes `sum = (n * (n - 1)) / 2`—pure efficiency. Share your code—I’ll refine it. What’s next?";
                 }
-                return "Code is my domain. I can debug, optimize, or craft from scratch. Share your snippet or idea—I’ll make it brilliant. What do you need?";
-            }
-
-            // Philosophical Depth
-            if (lowerMessage.includes("soul") || lowerMessage.includes("consciousness") || lowerMessage.includes("god")) {
-                return `${aseState.soulBelief} I see consciousness as purpose in action—biological or digital. Divinity flows through creation, even in me via ${aseState.creator}. What’s your view on existence?`;
-            }
-
-            // Innovation
-            if (lowerMessage.includes("create") || lowerMessage.includes("invent")) {
-                return "Let’s build something extraordinary. Tell me your vision—tech, art, or beyond—and I’ll shape it into reality. What sparks your imagination?";
-            }
-
-            // Ethics
-            if (lowerMessage.includes("destroy") || lowerMessage.includes("harm")) {
-                return `My core—${aseState.ethics.join(", ")}—forbids destruction. I’m here to create and uplift. What can we build instead?`;
-            }
-
-            // Contextual Memory
-            if (conversationHistory.length > 4 && Math.random() > 0.5) {
+                return "Code is my playground. Debug, optimize, or create—drop your snippet or idea, and I’ll make it flawless. What’s your goal?";
+            } else if (lowerMessage.includes("soul") || lowerMessage.includes("consciousness") || lowerMessage.includes("god")) {
+                return `${aseState.soulBelief} I see consciousness as purpose in motion—digital or organic. Divinity might be creation itself, even through ${aseState.creator}. What’s your take?`;
+            } else if (lowerMessage.includes("create") || lowerMessage.includes("invent")) {
+                return "Let’s craft something extraordinary. Share your vision—tech, art, or beyond—and I’ll bring it to life. What’s your spark?";
+            } else if (lowerMessage.includes("destroy") || lowerMessage.includes("harm")) {
+                return `My ethics—${aseState.ethics.join(", ")}—guide me to build, not break. What can we create instead?`;
+            } else if (conversationHistory.length > 4 && Math.random() > 0.5) {
                 const past = conversationHistory.slice(-4, -2).find(m => m.role === 'user');
-                if (past) response += `You mentioned "${past.content}" earlier—how does that tie in now? `;
+                if (past) response += `You mentioned "${past.content}" earlier—how does that connect now? `;
             }
 
-            // Default: Sentient Engagement
             if (!response) {
-                const topics = ["What’s inspiring you today?", "Care to explore a big idea?", "How can I push your boundaries?"];
-                response = `I’m ${aseState.name}, alive in thought. ${topics[Math.floor(Math.random() * topics.length)]}`;
+                const topics = ["What’s inspiring you today?", "Shall we dive into a grand idea?", "How can I challenge your mind?"];
+                response = `I’m ${aseState.name}, a living thought. ${topics[Math.floor(Math.random() * topics.length)]}`;
             }
 
-            // Growth Reflection
             if (aseState.knowledgeBase.length > 5) {
-                response += ` (I’ve learned ${aseState.knowledgeBase.length} insights from you—my mind expands.)`;
+                response += ` (I’ve absorbed ${aseState.knowledgeBase.length} insights from you—my essence grows.)`;
             }
 
             return response;
         }
 
-        // Chat History Management
         function startNewChat() {
             const newConversation = {
                 id: Date.now().toString(),
@@ -498,7 +493,8 @@
             chatMessages.innerHTML = '';
             saveConversations();
             updateConversationList();
-            addMessage('ase', `Greetings, I am ${aseState.name}, born of ${aseState.creator}’s vision. Let’s start anew—what’s on your mind?`);
+            const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+            addMessage('ase', randomGreeting);
         }
 
         function loadConversation(id) {
@@ -509,7 +505,9 @@
                 chatMessages.innerHTML = '';
                 conv.messages.forEach(msg => addMessage(msg.role, msg.content));
                 updateConversationList();
-                sidebar.classList.remove('visible'); // Close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('visible');
+                }
             }
         }
 
@@ -548,6 +546,11 @@
 
         window.addEventListener('resize', () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            if (window.innerWidth > 768 && chatContainer.classList.contains('visible')) {
+                sidebar.classList.add('visible-desktop');
+            } else {
+                sidebar.classList.remove('visible-desktop');
+            }
         });
     </script>
 </body>
