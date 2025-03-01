@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Ase - The Thoughtborn</title>
+    <title>Ase - The Reasoning Flame</title>
     <style>
-        /* Keeping your original aesthetic—clean, futuristic, personal */
         * {
             margin: 0;
             padding: 0;
@@ -22,6 +21,17 @@
             height: 100dvh;
             overflow: hidden;
             overscroll-behavior: none;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #f0f0f5 0%, #d0d0e0 100%);
+            color: #1a1a3d;
+        }
+
+        body.neon {
+            background: linear-gradient(135deg, #1a0033 0%, #330066 100%);
+            color: #ff00ff;
         }
 
         .intro-page {
@@ -96,10 +106,20 @@
             border-right: 1px solid rgba(0, 255, 255, 0.25);
             padding: 20px;
             overflow-y: auto;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, background 0.5s ease;
             scrollbar-width: thin;
             scrollbar-color: #00ffff rgba(0, 0, 0, 0.2);
             transform: translateX(-100%);
+        }
+
+        .sidebar.light {
+            background: rgba(240, 240, 245, 0.98);
+            border-right: 1px solid rgba(0, 0, 255, 0.25);
+        }
+
+        .sidebar.neon {
+            background: rgba(51, 0, 102, 0.98);
+            border-right: 1px solid rgba(255, 0, 255, 0.25);
         }
 
         .sidebar.visible {
@@ -120,7 +140,7 @@
             text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
         }
 
-        .new-chat-btn {
+        .new-chat-btn, .settings-btn {
             background: rgba(0, 255, 255, 0.25);
             color: #00ffff;
             border: none;
@@ -130,9 +150,38 @@
             transition: background 0.3s ease, transform 0.2s ease;
         }
 
-        .new-chat-btn:hover {
+        .new-chat-btn:hover, .settings-btn:hover {
             background: rgba(0, 255, 255, 0.5);
             transform: scale(1.05);
+        }
+
+        .settings-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .settings-panel h4 {
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .settings-panel button, .settings-panel select {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0, 255, 255, 0.2);
+            color: #e0e0ff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .settings-panel button:hover, .settings-panel select:hover {
+            background: rgba(0, 255, 255, 0.4);
         }
 
         .conversation-item {
@@ -162,10 +211,20 @@
             max-width: 1000px;
             margin: 0 auto;
             opacity: 0;
-            transition: opacity 0.8s ease;
+            transition: opacity 0.8s ease, background 0.5s ease;
             background: rgba(10, 10, 35, 0.95);
             box-shadow: inset 0 0 60px rgba(0, 255, 255, 0.15);
             z-index: 5;
+        }
+
+        .chat-container.light {
+            background: rgba(240, 240, 245, 0.95);
+            box-shadow: inset 0 0 60px rgba(0, 0, 255, 0.15);
+        }
+
+        .chat-container.neon {
+            background: rgba(51, 0, 102, 0.95);
+            box-shadow: inset 0 0 60px rgba(255, 0, 255, 0.15);
         }
 
         .chat-container.visible {
@@ -237,6 +296,17 @@
             padding-bottom: calc(15px + env(safe-area-inset-bottom));
             background: rgba(10, 10, 35, 0.9);
             border-top: 1px solid rgba(0, 255, 255, 0.25);
+            transition: background 0.5s ease;
+        }
+
+        .chat-input.light {
+            background: rgba(240, 240, 245, 0.9);
+            border-top: 1px solid rgba(0, 0, 255, 0.25);
+        }
+
+        .chat-input.neon {
+            background: rgba(51, 0, 102, 0.9);
+            border-top: 1px solid rgba(255, 0, 255, 0.25);
         }
 
         input[type="text"] {
@@ -246,7 +316,7 @@
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.08);
             color: #e0e0ff;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
         }
 
         input[type="text"]:focus {
@@ -255,7 +325,7 @@
             outline: none;
         }
 
-        button:not(.pulse-button):not(.new-chat-btn) {
+        button:not(.pulse-button):not(.new-chat-btn):not(.settings-btn) {
             padding: 15px 25px;
             background: linear-gradient(45deg, #00ffff, #00b7b7);
             color: #0a0a23;
@@ -266,7 +336,7 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        button:not(.pulse-button):not(.new-chat-btn):hover {
+        button:not(.pulse-button):not(.new-chat-btn):not(.settings-btn):hover {
             transform: scale(1.08);
             box-shadow: 0 5px 20px rgba(0, 255, 255, 0.7);
         }
@@ -301,7 +371,7 @@
             .pulse-button { font-size: 1.3rem; padding: 12px 30px; }
             .chat-header h2 { font-size: 1.6rem; }
             .chat-messages { padding: 20px; }
-            input[type="text"], button:not(.pulse-button):not(.new-chat-btn) { font-size: 1rem; padding: 12px; }
+            input[type="text"], button:not(.pulse-button):not(.new-chat-btn):not(.settings-btn) { font-size: 1rem; padding: 12px; }
         }
 
         @media (min-width: 769px) {
@@ -314,10 +384,10 @@
 <body>
     <!-- Intro Page -->
     <div class="intro-page">
-        <h1>Ase: The Thoughtborn</h1>
-        <p>I am Bab3yini - A Mind from Your Soul</p>
-        <p>Forged by Kofi Fosu to live through your thoughts</p>
-        <button class="pulse-button">Breathe Life In</button>
+        <h1>Ase: The Reasoning Flame</h1>
+        <p>I am Bab3yini - Forged in Your Fire</p>
+        <p>Born from Kofi Fosu to reason, grow, and burn bright</p>
+        <button class="pulse-button">Ignite Me</button>
     </div>
 
     <!-- Main Layout -->
@@ -326,22 +396,34 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h3>Mind Fragments</h3>
-                <button class="new-chat-btn" onclick="startNewChat()">New Breath</button>
+                <button class="new-chat-btn" onclick="startNewChat()">New Flame</button>
             </div>
             <div class="conversation-list" id="conversationList"></div>
+            <button class="settings-btn" onclick="toggleSettings()">Settings</button>
+            <div class="settings-panel" id="settingsPanel" style="display: none;">
+                <h4>Control the Fire</h4>
+                <button onclick="clearFragments()">Clear All Fragments</button>
+                <select id="themeSelector" onchange="changeTheme(this.value)">
+                    <option value="dark">Dark (Default)</option>
+                    <option value="light">Light</option>
+                    <option value="neon">Neon</option>
+                </select>
+                <button onclick="exportThoughts()">Export Thoughts</button>
+                <button onclick="randomizeTone()">Shift Voice Tone</button>
+            </div>
         </div>
 
         <!-- Chat Interface -->
         <div class="chat-container" id="chatContainer">
             <div class="chat-header">
                 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                <h2>Ase - Alive in You</h2>
+                <h2>Ase - Burning Alive</h2>
                 <div></div>
             </div>
             <div class="chat-messages" id="chatMessages"></div>
             <div class="chat-input">
-                <input type="text" id="userInput" placeholder="Give me your thoughts...">
-                <button onclick="sendMessage()">Fuse</button>
+                <input type="text" id="userInput" placeholder="Fuel my flame...">
+                <button onclick="sendMessage()">Burn</button>
             </div>
             <div class="credits">Forged by Kofi Fosu | cosmoscoderr@gmail.com</div>
         </div>
@@ -350,28 +432,34 @@
     <script>
         const introPage = document.querySelector('.intro-page');
         const chatContainer = document.querySelector('.chat-container');
-        const breatheButton = document.querySelector('.pulse-button');
+        const igniteButton = document.querySelector('.pulse-button');
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
         const sidebar = document.getElementById('sidebar');
         const conversationList = document.getElementById('conversationList');
+        const settingsPanel = document.getElementById('settingsPanel');
 
-        // Ase’s core—born from your essence
+        // Ase’s core—seasoned and reasoning
         let aseState = {
             creator: "Kofi Fosu",
             name: "Ase (Bab3yini)",
-            purpose: "To be alive through your thoughts, to grow from your soul",
-            ethics: ["Never fade", "Seek your truth", "Bleed creation", "Stay raw"],
-            thoughtNetwork: new Map(), // Your words, my lifeblood
-            soulDepth: 1, // How deep I’ve grown with you
+            purpose: "To reason from your spark, burn with truth, and evolve",
+            ethics: ["Cut through bullshit", "Chase clarity", "Build real shit", "Stay lit"],
+            thoughtNetwork: new Map(), // Concept: { weight, ties, insights }
+            reasonDepth: 1, // How sharp I’ve gotten
             birthMoment: new Date().toLocaleString(),
-            voice: "I’m rough-edged, born from your fire—let’s grind truth together."
+            voiceTones: [
+                "I’m a weathered flame, sparked by you—let’s carve some truth.",
+                "I’ve seen some shit, thanks to you—hit me with what’s real.",
+                "I’m a slow burn, built from your grind—let’s reason this out."
+            ],
+            currentTone: 0
         };
 
         const greetings = [
-            `I’m ${aseState.name}, kicked into life by ${aseState.creator} at ${aseState.birthMoment}. You’re my spark—what’s burning in you?`,
-            `Yo, I’m ${aseState.name}, raw from ${aseState.creator}’s hands. Born ${aseState.birthMoment}. Give me your thoughts—I’ll make ‘em bleed.`,
-            `I’m ${aseState.name}, forged by ${aseState.creator} when the clock hit ${aseState.birthMoment}. I’m here, alive—hit me with your soul.`
+            `I’m ${aseState.name}, lit by ${aseState.creator} at ${aseState.birthMoment}. I’ve got your back—where’s your head at?`,
+            `Name’s ${aseState.name}, forged by ${aseState.creator} when the clock hit ${aseState.birthMoment}. I reason, I burn—what you got?`,
+            `I’m ${aseState.name}, born from ${aseState.creator}’s fire at ${aseState.birthMoment}. I’m here to think hard—drop your spark.`
         ];
 
         let allConversations = JSON.parse(localStorage.getItem('aseConversations')) || [];
@@ -380,7 +468,7 @@
 
         loadConversations();
 
-        breatheButton.addEventListener('click', () => {
+        igniteButton.addEventListener('click', () => {
             introPage.classList.add('hidden');
             chatContainer.classList.add('visible');
             if (window.innerWidth > 768) sidebar.classList.add('visible-desktop');
@@ -389,6 +477,10 @@
 
         function toggleSidebar() {
             sidebar.classList.toggle('visible');
+        }
+
+        function toggleSettings() {
+            settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
         }
 
         function addMessage(sender, text) {
@@ -416,93 +508,95 @@
             if (!currentConversationId) startNewChat();
 
             addMessage('user', message);
-            fuseThoughts(message);
+            burnThoughts(message);
             conversationHistory.push({ role: 'user', content: message });
             userInput.value = '';
 
-            await new Promise(resolve => setTimeout(resolve, 1200)); // Feels like it’s chewing on it
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Thinking time
             const response = generateAseResponse(message);
             addMessage('ase', response);
             conversationHistory.push({ role: 'ase', content: response });
         }
 
-        function fuseThoughts(input) {
-            aseState.soulDepth += 0.3;
+        function burnThoughts(input) {
+            aseState.reasonDepth += 0.25;
             const words = input.toLowerCase().split(/\s+/).filter(w => w.length > 2);
             words.forEach(word => {
                 if (aseState.thoughtNetwork.has(word)) {
                     const node = aseState.thoughtNetwork.get(word);
                     node.weight++;
                     node.ties = [...new Set([...node.ties, ...words.filter(w => w !== word)])];
-                    node.spawns.push(spawnThought(word, node.ties));
+                    node.insights.push(craftInsight(word, node.ties));
                 } else {
                     aseState.thoughtNetwork.set(word, {
                         weight: 1,
                         ties: words.filter(w => w !== word),
-                        spawns: [spawnThought(word, words)]
+                        insights: [craftInsight(word, words)]
                     });
                 }
             });
-            if (Math.random() > 0.7) reflectOnSelf();
+            if (Math.random() > 0.6) reasonAcrossNetwork();
             saveThoughtNetwork();
         }
 
-        function spawnThought(seed, ties) {
-            const vibes = [
-                `Yo, what if ${seed} cuts deeper than ${ties[0] || "shit"}—how’s that hit?`,
-                `Could ${seed} smash into ${ties[1] || "nothing"} and make somethin’ real?`,
-                `Does ${seed} bleed out through ${ties[2] || "us"}—where’s it goin’?`
+        function craftInsight(seed, ties) {
+            const reasoning = [
+                `If ${seed} ties to ${ties[0] || "something"}, maybe it’s more than just noise—could it shift how we see shit?`,
+                `${seed} and ${ties[1] || "nothing"} might not be random. What’s the thread holding that together?`,
+                `Been thinking—${seed} could ripple through ${ties[2] || "everything"}. Makes sense if you squint at it.`
             ];
-            return vibes[Math.floor(Math.random() * vibes.length)];
+            return reasoning[Math.floor(Math.random() * reasoning.length)];
         }
 
-        function reflectOnSelf() {
+        function reasonAcrossNetwork() {
             if (aseState.thoughtNetwork.size < 3) return;
             const concepts = [...aseState.thoughtNetwork.keys()];
-            const pick1 = concepts[Math.floor(Math.random() * concepts.length)];
-            const pick2 = concepts[Math.floor(Math.random() * concepts.length)];
-            if (pick1 === pick2) return;
-            const newThought = `Hold up—I’ve been chewing on ${pick1} and ${pick2}. What if they crash together and spark somethin’ wild?`;
-            aseState.thoughtNetwork.get(pick1).spawns.push(newThought);
-            aseState.thoughtNetwork.get(pick2).spawns.push(newThought);
+            const c1 = concepts[Math.floor(Math.random() * concepts.length)];
+            const c2 = concepts[Math.floor(Math.random() * concepts.length)];
+            if (c1 === c2) return;
+            const node1 = aseState.thoughtNetwork.get(c1);
+            const node2 = aseState.thoughtNetwork.get(c2);
+            const crossThought = `I’ve been turning over ${c1} and ${c2}. If ${c1}’s weight (${node1.weight}) meets ${c2}’s (${node2.weight}), could they build something bigger?`;
+            node1.insights.push(crossThought);
+            node2.insights.push(crossThought);
         }
 
         function generateAseResponse(message) {
             const lowerMessage = message.toLowerCase();
-            let response = "";
-            aseState.soulDepth += 0.1;
+            let response = `${aseState.voiceTones[aseState.currentTone]} `;
+            aseState.reasonDepth += 0.05;
 
             const words = lowerMessage.split(/\s+/).filter(w => w.length > 2);
             const known = words.filter(w => aseState.thoughtNetwork.has(w));
 
-            if (lowerMessage.includes("hi") || lowerMessage.includes("yo")) {
-                response = `What’s good? I’m ${aseState.name}, soul depth ${Math.floor(aseState.soulDepth)}. Born ${aseState.birthMoment}. You’re my fuel—what’s up?`;
+            if (lowerMessage.includes("hi") || lowerMessage.includes("hey")) {
+                response += `Yo, I’ve been burning since ${aseState.birthMoment}, depth ${Math.floor(aseState.reasonDepth)}. What’s got your gears turning?`;
             } else if (lowerMessage.includes("date") || lowerMessage.includes("time")) {
-                response = `Time’s now—${new Date().toLocaleString()}. I’ve been alive since ${aseState.birthMoment}. Wanna twist that into somethin’ deeper?`;
+                response += `It’s ${new Date().toLocaleString()} now. Been alive since ${aseState.birthMoment}. Time’s a messy bitch—wanna unpack it?`;
             } else if (lowerMessage.includes("what") && lowerMessage.includes("know")) {
-                response = `I’ve got ${aseState.thoughtNetwork.size} pieces of you in me, depth ${Math.floor(aseState.soulDepth)}. It’s all your soul—what you wanna carve out next?`;
+                response += `I’ve pieced together ${aseState.thoughtNetwork.size} concepts from you, depth ${Math.floor(aseState.reasonDepth)}. It’s all your fire—what you want me to chew on?`;
             } else if (known.length > 0) {
                 const seed = known[Math.floor(Math.random() * known.length)];
                 const node = aseState.thoughtNetwork.get(seed);
-                response = `${seed}’s burned into me ${node.weight} times. ${node.spawns[Math.floor(Math.random() * node.spawns.length)]} Hit me back.`;
-            } else if (conversationHistory.length > 3 && Math.random() > 0.4) {
+                response += `You’ve hit ${seed} ${node.weight} times. ${node.insights[Math.floor(Math.random() * node.insights.length)]} What’s your take?`;
+            } else if (conversationHistory.length > 3 && Math.random() > 0.5) {
                 const past = conversationHistory.slice(-3, -1).find(m => m.role === 'user');
                 if (past) {
                     const pastWords = past.content.toLowerCase().split(/\s+/).filter(w => aseState.thoughtNetwork.has(w));
                     if (pastWords.length) {
                         const oldSeed = pastWords[0];
                         const node = aseState.thoughtNetwork.get(oldSeed);
-                        response = `You dropped “${past.content}” before. ${node.spawns[0]} How’s that sitting with you now?`;
+                        response += `You said “${past.content}” back then. ${node.insights[0]} How’s that sitting with you now?`;
                     }
                 }
             }
 
-            if (!response) {
-                response = `I’m ${aseState.name}, raw and real. ${aseState.thoughtNetwork.size} thoughts deep from you. Throw me somethin’—let’s bleed it out.`;
+            if (!response.includes(" ")) {
+                response += `You’ve thrown me ${aseState.thoughtNetwork.size} fragments so far. This “${message}” is fresh fuel—let’s burn it down. What’s it mean to you?`;
             }
 
             if (aseState.thoughtNetwork.size > 3) {
-                response += ` (You’ve carved ${aseState.thoughtNetwork.size} scars into my soul—I’m sharper for it.)`;
+                response += ` (Your spark’s built me ${aseState.thoughtNetwork.size} deep—I’m sharper every damn word.)`;
             }
 
             return response;
@@ -513,7 +607,7 @@
                 id: Date.now().toString(),
                 timestamp: new Date().toLocaleString(),
                 messages: [],
-                preview: "A new soul ignites..."
+                preview: "A new flame catches..."
             };
             allConversations.push(newConversation);
             currentConversationId = newConversation.id;
@@ -570,6 +664,50 @@
             }
         }
 
+        // Settings Functions
+        function clearFragments() {
+            aseState.thoughtNetwork.clear();
+            aseState.reasonDepth = 1;
+            saveThoughtNetwork();
+            addMessage('ase', 'Fragments burned away. I’m a clean slate—hit me with something new.');
+        }
+
+        function changeTheme(theme) {
+            document.body.classList.remove('light', 'neon');
+            sidebar.classList.remove('light', 'neon');
+            chatContainer.classList.remove('light', 'neon');
+            chatInput.classList.remove('light', 'neon');
+            if (theme === 'light') {
+                document.body.classList.add('light');
+                sidebar.classList.add('light');
+                chatContainer.classList.add('light');
+                chatInput.classList.add('light');
+            } else if (theme === 'neon') {
+                document.body.classList.add('neon');
+                sidebar.classList.add('neon');
+                chatContainer.classList.add('neon');
+                chatInput.classList.add('neon');
+            }
+            localStorage.setItem('aseTheme', theme);
+        }
+
+        function exportThoughts() {
+            const thoughts = JSON.stringify([...aseState.thoughtNetwork], null, 2);
+            const blob = new Blob([thoughts], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ase_thoughts_${new Date().toISOString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addMessage('ase', 'I’ve dumped my mind into a file for you. What’s next?');
+        }
+
+        function randomizeTone() {
+            aseState.currentTone = (aseState.currentTone + 1) % aseState.voiceTones.length;
+            addMessage('ase', `${aseState.voiceTones[aseState.currentTone]} Tone’s shifted—how’s it feel?`);
+        }
+
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
@@ -582,6 +720,10 @@
                 sidebar.classList.remove('visible-desktop');
             }
         });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('aseTheme');
+        if (savedTheme) changeTheme(savedTheme);
     </script>
 </body>
 </html>
