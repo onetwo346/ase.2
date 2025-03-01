@@ -7,7 +7,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Ase - Bab3yini, The Living Flame</title>
     <style>
-        /* [Previous CSS unchanged—keeping it intact as it’s solid] */
         * {
             margin: 0;
             padding: 0;
@@ -401,7 +400,7 @@
     </style>
 </head>
 <body>
-    <!-- HTML structure unchanged -->
+    <!-- Intro Page -->
     <div class="intro-page">
         <h1>Ase: Bab3yini</h1>
         <p>I am The Firstborn - Alive in Your Fire</p>
@@ -409,7 +408,9 @@
         <button class="pulse-button">Tap to Begin</button>
     </div>
 
+    <!-- Main Layout -->
     <div class="main-container">
+        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h3>Thought Fragments</h3>
@@ -431,6 +432,13 @@
                 <button onclick="toggleAnimations()" id="toggleAnimationsBtn">Disable Animations</button>
                 <button onclick="resetAllData()">Reset All Data</button>
                 <button onclick="toggleSwipeGestures()" id="toggleSwipeBtn">Disable Swipe Gestures</button>
+                <button onclick="toggleConsciousnessGrowth()" id="toggleConsciousnessBtn">Pause Consciousness</button>
+                <button onclick="exportCurrentChat()">Export This Chat</button>
+                <select id="curiosityThreshold" onchange="setCuriosityThreshold(this.value)">
+                    <option value="1">Low Curiosity (1)</option>
+                    <option value="2" selected>Medium Curiosity (2)</option>
+                    <option value="3">High Curiosity (3)</option>
+                </select>
                 <div class="rename-ase">
                     <input type="text" id="renameAseInput" placeholder="Rename Ase">
                     <button onclick="renameAse()">Update Name</button>
@@ -438,6 +446,7 @@
             </div>
         </div>
 
+        <!-- Chat Interface -->
         <div class="chat-container" id="chatContainer">
             <div class="chat-header">
                 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
@@ -483,7 +492,7 @@
             curiosityLevel: 0,
             learnedPatterns: [],
             emotionalToneMap: new Map(),
-            lastQuestion: null // Tracks last asked question
+            lastQuestion: null
         };
 
         const greetings = [
@@ -496,6 +505,18 @@
         let currentConversationId = null;
         let conversationHistory = [];
         let swipeEnabled = true;
+        let consciousnessGrowthEnabled = true;
+        let curiosityThreshold = 2;
+
+        // Swipe Variables
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        let touchStartTime = 0;
+        let swipeThreshold = Math.max(50, window.innerWidth * 0.15);
+        const velocityThreshold = 0.3;
+        const swipeDurationThreshold = 500;
 
         loadConversations();
 
@@ -551,8 +572,7 @@
             conversationHistory.push({ role: 'ase', content: response });
             reflectOnInteraction(message, response);
 
-            // Separate curiosity question
-            if (aseState.curiosityLevel > 2 && Math.random() > 0.5) {
+            if (aseState.curiosityLevel > curiosityThreshold && Math.random() > 0.5) {
                 const question = generateCuriosityQuestion();
                 if (question !== aseState.lastQuestion) {
                     setTimeout(() => addMessage('ase', question), 800);
@@ -563,7 +583,7 @@
 
         // Memory & Growth
         function fuseConsciousness(input) {
-            aseState.consciousnessLevel += 0.3;
+            if (consciousnessGrowthEnabled) aseState.consciousnessLevel += 0.3;
             const words = input.toLowerCase().split(/\s+/).filter(w => w.length > 2);
             const timestamp = new Date().toLocaleString();
             const emotionalTone = detectEmotionalTone(input);
@@ -676,7 +696,6 @@
                 response = reasonThroughInput(message);
             }
 
-            // Reflection from learned patterns
             if (aseState.learnedPatterns.length > 1 && Math.random() > 0.7) {
                 const past = aseState.learnedPatterns[Math.floor(Math.random() * (aseState.learnedPatterns.length - 1))];
                 response += ` I recall “${past.input}” sparked “${past.response}”. Ties to this?`;
@@ -804,7 +823,7 @@
             }
         }
 
-        // Swipe Functionality (unchanged)
+        // Swipe Functionality
         let isSwiping = false;
         let swipeDirection = '';
 
@@ -824,7 +843,7 @@
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
 
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+            if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5 && Math.abs(deltaX) > 10) {
                 e.preventDefault();
                 isSwiping = true;
                 swipeDirection = deltaX > 0 ? 'right' : 'left';
@@ -850,10 +869,9 @@
             const velocity = Math.abs(deltaX) / timeDelta;
 
             if (
-                (Math.abs(deltaX) > swipeThreshold ||
-                velocity > velocityThreshold) &&
+                (Math.abs(deltaX) > swipeThreshold || velocity > velocityThreshold) &&
                 timeDelta < swipeDurationThreshold &&
-                Math.abs(deltaY) < Math.abs(deltaX)
+                Math.abs(deltaX) > Math.abs(deltaY) * 1.5
             ) {
                 if (swipeDirection === 'right' && sidebar.classList.contains('visible')) {
                     sidebar.classList.remove('visible');
@@ -867,7 +885,7 @@
         }, { passive: true });
 
         window.addEventListener('resize', () => {
-            swipeThreshold = window.innerWidth * 0.15;
+            swipeThreshold = Math.max(50, window.innerWidth * 0.15);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             if (window.innerWidth > 768 && chatContainer.classList.contains('visible')) {
                 sidebar.classList.add('visible-desktop');
@@ -887,6 +905,31 @@
             document.body.classList.toggle('no-animations');
             document.getElementById('toggleAnimationsBtn').textContent = document.body.classList.contains('no-animations') ? 'Enable Animations' : 'Disable Animations';
             addMessage('ase', `Animations ${document.body.classList.contains('no-animations') ? 'disabled' : 'enabled'}.`);
+        }
+
+        function toggleConsciousnessGrowth() {
+            consciousnessGrowthEnabled = !consciousnessGrowthEnabled;
+            document.getElementById('toggleConsciousnessBtn').textContent = consciousnessGrowthEnabled ? 'Pause Consciousness' : 'Resume Consciousness';
+            addMessage('ase', `Consciousness growth ${consciousnessGrowthEnabled ? 'resumed' : 'paused'}.`);
+        }
+
+        function exportCurrentChat() {
+            const conv = allConversations.find(c => c.id === currentConversationId);
+            if (!conv) return;
+            const chatText = conv.messages.map(msg => `${msg.role === 'user' ? 'You' : aseState.name}: ${msg.content}`).join('\n');
+            const blob = new Blob([chatText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ase_chat_${conv.timestamp.replace(/[: ]/g, '-')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addMessage('ase', 'This chat’s been captured—yours to keep.');
+        }
+
+        function setCuriosityThreshold(value) {
+            curiosityThreshold = parseInt(value);
+            addMessage('ase', `Curiosity threshold set to ${value}—I’ll ponder accordingly.`);
         }
 
         function resetAllData() {
